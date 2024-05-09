@@ -1,0 +1,13 @@
+{
+  "name": "My Job Application Tracker Development Container",
+
+  "dockerComposeFile": ["../docker-compose.yaml", "../docker-compose.dev.yaml"],
+
+  "service": "react-app",
+
+  "workspaceFolder": "/app",
+
+  "forwardPorts": [3000],
+
+  "shutdownAction": "none"
+}

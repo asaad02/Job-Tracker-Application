@@ -1,0 +1,67 @@
+version: '3.8'  # Specifies the Docker Compose file version
+
+services:
+  # The Spring Boot application service definition
+  spring-app:  
+    build: ./spring  # Points to the Dockerfile in the 'spring' directory to build the Spring Boot app image
+    ports:
+      - "8080:8080"  # Maps port 8080 on the host to port 8080 on the container for HTTP access to the app
+    #Environment Variables: These are passed to the container at runtime. For example, DB_ADDRESS is set to jdbc:mysql://mysql:3306, indicating the application should connect to a MySQL database at the given JDBC URL.
+    environment:  # Environment variables for the Spring application
+      - DB_ADDRESS=jdbc:mysql://mysql:3306  # JDBC URL for the MySQL database, 'mysql' is the service name in docker-compose
+      - DB_DATABASE=template_db  # The name of the database to use
+      - DB_USER=root  # The username for the database
+      - DB_PASSWORD=pwd  # The password for the database
+
+    networks:
+      - backend-network  # Connects the Spring Boot app to the custom backend network
+      - frontend-network  # Custom network for communication between frontend and backend
+
+  mysql:  # The MySQL database service
+    build: ./mysql  # Builds the Docker image from the Dockerfile in the './mysql' directory
+    #Environment Variables: Used to configure the MySQL server, like setting the root password (MYSQL_ROOT_PASSWORD) and specifying the database to create at startup (MYSQL_DATABASE).
+    environment:  # Environment variables for the MySQL service
+      - MYSQL_ROOT_PASSWORD=pwd  # The root password for MySQL
+      - MYSQL_DATABASE=template_db  # The database to create when the container starts
+    #Volumes: volumes: - mariadb_data:/var/lib/mysql mounts the named volume mariadb_data to /var/lib/mysql inside the container, providing persistent storage for the database.
+    volumes:  # Persistent storage for the MySQL database
+      - mariadb_data:/var/lib/mysql  # Maps 'mariadb_data' volume to the data directory of MySQL
+    networks:  # Network the MySQL service is connected to
+      - backend-network  # Network for communicating with the Spring service
+    ports:
+      - "3306:3306"  # Exposes port 3306 on the host and maps it to port 3306 in the container
+
+
+  react-app:  # The React frontend application service
+    build: ./react  # Points to the directory containing the Dockerfile for the React application
+    ports:
+      - "3000:3000"  # Maps port 3000 from the container to port 3000 on the host
+    environment:  # Environment variable to configure the proxy to the backend Spring service
+      - BACKEND_PROXY=http://spring-app:8080   # URL of the backend Spring service
+    networks:  # Connects the React service to the frontend network
+      - frontend-network
+
+  python-app:
+    build: ./python
+    environment:
+      DB_HOST: mysql  # Assuming 'mysql' is the service name of your MySQL database in docker-compose
+      DB_DATABASE: template_db
+      DB_USER: root
+      DB_PASSWORD: pwd
+    depends_on:
+      - mysql  # This will make sure MySQL is started before the Python container
+    networks:
+      - backend-network
+    volumes:
+      - /tmp/imports:/usr/app/import  # Maps '/tmp/imports' on the host to '/usr/app/import' in the container
+      - /tmp/exports:/usr/app/export  # Maps '/tmp/exports' on the host to '/usr/app/export' in the container
+      
+
+volumes:
+  mariadb_data:
+    driver: local
+
+networks:
+  # Defines a custom network for backend communication
+  backend-network:
+  frontend-network:  # Custom network for communication between the frontend (React) and backend (Spring)

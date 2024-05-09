@@ -1,0 +1,88 @@
+@startuml
+skinparam componentStyle uml2
+skinparam component {
+    BackgroundColor PaleGreen
+    ArrowColor SeaGreen
+}
+skinparam note {
+    BackgroundColor Wheat
+}
+skinparam interface {
+    BackgroundColor LightBlue
+}
+skinparam rectangle {
+    BackgroundColor<<network>> LightSkyBlue
+    BackgroundColor<<volume>> Gold
+}
+
+' Frontend Components
+component "React App" as ReactApp {
+    interface "HTTP Port 3000" as HTTP3000
+}
+note top of ReactApp
+    Environment Variable:
+    BACKEND_PROXY: http://spring-app:8080
+end note
+
+' Backend Components
+component "Spring App" as SpringApp {
+    interface "HTTP Port 8080" as HTTP8080
+}
+note top of SpringApp
+    Environment Variables:
+    DB_ADDRESS: jdbc:mysql://mysql:3306
+    DB_DATABASE: template_db
+    DB_USER: root
+    DB_PASSWORD: pwd
+end note
+
+' Database Components
+component "MySQL" as MySQL {
+    interface "Port 3306" as Port3306
+}
+note top of MySQL 
+    Environment Variables:
+    MYSQL_ROOT_PASSWORD: pwd
+    MYSQL_DATABASE: template_db
+end note
+
+' Python App Component
+component "Python App" as PythonApp {
+
+}
+note top of PythonApp 
+    Environment Variables:
+    MYSQL_ROOT_PASSWORD: pwd
+    MYSQL_DATABASE: template_db
+end note
+
+' Volume Component
+rectangle "Volume: mariadb_data" as VolumeMariadb <<volume>> {
+
+}
+
+' Networks
+rectangle "Backend Network" as BackendNetwork <<network>> {
+
+}
+rectangle "Frontend Network" as FrontendNetwork <<network>> {
+
+}
+
+' Connections
+ReactApp -up-> FrontendNetwork : Uses
+SpringApp -up-> FrontendNetwork : Uses
+SpringApp -up-> BackendNetwork : Uses
+MySQL -up-> BackendNetwork : Uses
+PythonApp -up-> BackendNetwork : Uses
+VolumeMariadb -up-> MySQL : Mounts
+
+
+' Layout arrangement
+ReactApp -[hidden]right- SpringApp
+SpringApp -[hidden]right- BackendNetwork
+BackendNetwork -[hidden]down- MySQL
+BackendNetwork -[hidden]down- PythonApp
+BackendNetwork -[hidden]down- VolumeMariadb
+
+@enduml

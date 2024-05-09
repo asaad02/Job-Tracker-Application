@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.1.3'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'jacoco'
+}
+
+group = 'com.example.spring'
+version = '1.0'
+archivesBaseName = "job-application-tracker-app"
+
+repositories {
+    mavenCentral()
+    jcenter() // This repository is not needed if you are only using Maven Central
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.0'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.2'
+    runtimeOnly 'mysql:mysql-connector-java:8.0.11'
+    runtimeOnly 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+
+    // JUnit Jupiter (JUnit 5) is included in spring-boot-starter-test
+    // The spring-boot-starter-test includes Mockito as well
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // No need to include these dependencies separately as they are already included in spring-boot-starter-test
+    // testImplementation 'org.mockito:mockito-core:3.11.2'
+    // testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    // testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        csv.required = true
+    }
+}

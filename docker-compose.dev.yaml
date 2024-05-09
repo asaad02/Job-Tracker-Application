@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  backend:
+    # needed for dev containers to keep the container running.
+    # Overrides default command in docker-compose.yaml so things don't shut down after the process ends - which will prevent killing the container window in vscode.
+    # Taken from: https://github.com/devcontainers/templates/blob/main/src/javascript-node-mongo/.devcontainer/docker-compose.yml
+    command: sleep infinity
+  frontend:
+    command: sleep infinity
